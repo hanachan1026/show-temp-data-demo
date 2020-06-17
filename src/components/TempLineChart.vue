@@ -45,72 +45,69 @@ export default class TempLineChart extends Vue {
   };
 
   async created() {
-    await this.listenToData();
+    await this.listenToDataChange();
   }
 
-  async mounted() {
-    const data = await this.fetchData();
-    this.fillData(data);
-  }
+  // async mounted() {
+  //   const data = await this.fetchData();
+  //   this.fillData(data);
+  // }
 
-  async fetchData() {
-    const dataRef = db.collection("data");
-    const queryInfo = dataRef.orderBy("datetime");
-    const snapshot = await queryInfo.get();
-    const x: string[] = [];
-    const y: number[] = [];
+  // async fetchData() {
+  //   const dataRef = db.collection("data");
+  //   const queryInfo = dataRef.orderBy("datetime");
+  //   const snapshot = await queryInfo.get();
+  //   const x: string[] = [];
+  //   const y: number[] = [];
 
-    snapshot.docs.forEach(doc => {
-      const item = doc.data();
-      const time = item.datetime;
-      const temp = item.temp;
-      let datetime;
+  //   snapshot.docs.forEach(doc => {
+  //     const item = doc.data();
+  //     const time = item.datetime;
+  //     const temp = item.temp;
+  //     let datetime;
 
-      if (time !== undefined && temp !== undefined) {
-        datetime = new Date(time * 1000).toLocaleTimeString('en-GB');
+  //     if (time !== undefined && temp !== undefined) {
+  //       datetime = new Date(time * 1000).toLocaleTimeString('en-GB');
 
-        x.push(datetime);
-        y.push(temp);
-      }
-    });
+  //       x.push(datetime);
+  //       y.push(temp);
+  //     }
+  //   });
 
-    return [x, y];
-  }
+  //   return [x, y];
+  // }
 
-  listenToData() {
+  listenToDataChange() {
     const dataRef = db.collection("data");
     const queryInfo = dataRef.orderBy("datetime");
     const x: string[] = [];
     const y: number[] = [];
 
     queryInfo.onSnapshot(querySnapshot => {
-      console.log('update');
-      querySnapshot.docs.forEach(doc => {
-        const item = doc.data();
-        const time = item.datetime;
-        const temp = item.temp;
-        let datetime;
+      querySnapshot.docChanges().forEach(change => {
+        if (change.type === "added") {
+          // データが追加された時
+          const item = change.doc.data();
+          const time = item.datetime;
+          const temp = item.temp;
+          let datetime;
 
-        if (time !== undefined && temp !== undefined) {
-          datetime = new Date(time * 1000).toLocaleTimeString('en-GB');
+          if (time !== undefined && temp !== undefined) {
+            datetime = new Date(time * 1000).toLocaleTimeString('en-GB');
 
-          x.push(datetime);
-          y.push(temp);
+            x.push(datetime);
+            y.push(temp);
+          }
+        }
+        else if (change.type === 'modified') {
+          // データが変更された時
+        }
+        else if (change.type === 'removed') {
+          // データが削除された時
         }
       });
 
-      this.datacollection = {
-        labels: x,
-        datasets: [
-          {
-            label: "Demo data",
-            backgroundColor: "rgb(255, 99, 132)",
-            fill: false,
-            lineTension: 0,
-            data: y,
-          },
-        ]
-      };
+      this.fillData([x, y]);
     });
   }
 
