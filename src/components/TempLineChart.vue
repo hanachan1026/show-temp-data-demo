@@ -26,6 +26,11 @@ export default class TempLineChart extends Vue {
           },
           gridLines: {
             display: true
+          },
+          scaleLabel: {
+            display: true,
+            labelString: 'temperature(°C)',
+            fontSize: 14
           }
         }
       ],
@@ -33,6 +38,11 @@ export default class TempLineChart extends Vue {
         {
           gridLines: {
             display: true
+          },
+          scaleLabel: {
+            display: true,
+            labelString: 'datetime',
+            fontSize: 14
           }
         }
       ]
